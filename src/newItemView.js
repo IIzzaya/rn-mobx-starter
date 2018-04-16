@@ -31,9 +31,9 @@ export default class NewItemView extends Component {
       <View style={{flex: 1}}>
         <View style={styles.heading}>
           <Text style={styles.headingText}>{item.name}</Text>
-          <Button
+          <Text
             onPress={this.props.navigation.pop()}
-            style={styles.closeButton}>&times;</Button>
+            style={styles.closeButton}>&times;</Text>
         </View>
         {!item.items.length && <NoItems />}
         {item.items.length ? <Items items={item.items} /> : <View />}
