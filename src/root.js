@@ -1,39 +1,49 @@
-import React from "react";
-import { observable, action, computed, reaction } from "mobx";
+import React, { Component } from "react";
 import MobxView from "./mobxView";
+import HelloView from "./helloView";
+import NewItemView from "./newItemView";
+import listStore from "./listStore";
+import { StackNavigator } from "react-navigation";
+import { Provider } from "mobx-react";
 
-class Store {
-  @observable
-  todos = [
-    {
-      title: "todo标题",
-      done: false
+const RootNavigator = StackNavigator(
+  {
+    helloView: {
+      screen: HelloView
     },
-    {
-      title: "已经完成 todo 的标题",
-      done: true
+    mobxView: {
+      screen: MobxView
     },
-    {
-      title: "I am IIzzaya",
-      done: false
+    newItemView: {
+      screen: NewItemView
     }
-  ];
-  @action
-  changeTodoTitle({ index, title }) {
-    this.todos[index].title = title;
-    this.todos[index].done = !this.todos[index].done;
+  },
+  {
+    headerMode: "screen",
+    mode: "card",
+    navigationOptions: {
+      headerStyle: {
+        backgroundColor: "#ffffff"
+      },
+      headerTitleStyle: {
+        color: "#000000",
+        fontSize: 20
+      },
+      headerTintColor: "#000000",
+      sceneStyle: {
+        shadowColor: "black",
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 1,
+        shadowRadius: 5
+      }
+    }
   }
-  @computed
-  get unfinishedTodos() {
-    return this.todos.filter(todo => todo.done).length;
-  }
-}
+);
 
-var store = new Store();
-
-class App extends React.Component {
+export default class App extends Component {
   render() {
-    return <MobxView store={store} />;
+    return (
+        <RootNavigator screenProps={listStore}/>
+    );
   }
 }
-export default App;

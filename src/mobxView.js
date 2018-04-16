@@ -1,96 +1,168 @@
 import React from "react";
-import { Platform, StyleSheet, Text, View, Button } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableHighlight,
+  StyleSheet,
+  Button
+} from "react-native";
 import { observer } from "mobx-react";
 import { reaction } from "mobx";
 
-const instructions = Platform.select({
-  ios: "Press Cmd+R to reload,\n" + "Cmd+D or shake for dev menu",
-  android:
-    "Double tap R on your keyboard to reload,\n" +
-    "Shake or press menu button for dev menu"
-});
-
+@observer
 export default class MobxView extends React.Component {
   constructor(props) {
-    console.log("constructor CALLED");
+    console.log("MobxView-constructor CALLED");
     console.log("props:");
     console.log(props);
     super(props);
 
-    this.state = {};
+    this.state = {
+      text: "",
+      showInput: false
+    };
   }
 
-  onTestMobxButtonPressed = () => {
-    console.log("onTestMobxButtonPressed");
-    this.props.store.todos[0].title = "直接修改后的todo标题";
-    this.props.store.todos[0].done = !this.props.store.todos[0].done;
-    console.log(this.props.store.todos);
-  };
-  onTestMobxButton2Pressed = () => {
-    console.log("onTestMobxButtonPressed");
-    this.props.store.changeTodoTitle({
-      index: 1,
-      title: "通过@action修改后的todo标题"
+  toggleInput() {
+    this.setState({ showInput: !this.state.showInput });
+  }
+  addListItem() {
+    this.props.screenProps.addListItem(this.state.text);
+    this.setState({
+      text: "",
+      showInput: !this.state.showInput
     });
-    console.log(this.props.store.todos);
-  };
+  }
+  removeListItem(item) {
+    this.props.screenProps.removeListItem(item);
+  }
+  updateText(text) {
+    this.setState({ text });
+  }
+  addItemToList(item) {
+    this.props.navigation.push("newItemView", {
+      item,
+      store: this.props.store
+    });
+    console.log(this.props.navigation);
+  }
 
-  //在需要相应的模块（函数）前添加 @observer 装饰器
-  @observer
   render() {
+    const { showInput } = this.state;
+    const { list } = this.props.screenProps;
+
     return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Natives!</Text>
-        <Text style={styles.instructions}>
-          To get started, edit src/root.js
-        </Text>
-        <Text style={styles.instructions}>{instructions}</Text>
-        <Button
-          onPress={this.onTestMobxButtonPressed}
-          title={"直接修改props"}
-        />
-        <Button
-          onPress={this.onTestMobxButton2Pressed}
-          title={"通过@action修改"}
-        />
-        <Text style={styles.instructions}>
-          {this.props.store.todos[0].title +
-            " 完成状态：" +
-            this.props.store.todos[0].done}
-        </Text>
-        <Text style={styles.instructions}>
-          {this.props.store.todos[1].title +
-            " 完成状态：" +
-            this.props.store.todos[1].done}
-        </Text>
-        <Text style={styles.instructions}>
-          {this.props.store.todos[2].title +
-            " 完成状态：" +
-            this.props.store.todos[2].done}
-        </Text>
-        <Text style={styles.instructions}>
-          {"未完成的Todos数目：" + this.props.store.unfinishedTodos}
-        </Text>
+      <View style={{ flex: 1 }}>
+        <View style={styles.heading}>
+          <Text style={styles.headingText}>My List App</Text>
+        </View>
+        {!list.length ? <NoList /> : null}
+        <View style={{ flex: 1 }}>
+          {list.map((l, i) => {
+            return (
+              <View key={i} style={styles.itemContainer}>
+                <Text
+                  style={styles.item}
+                  onPress={this.addItemToList.bind(this, l)}
+                >
+                  {l.name.toUpperCase()}
+                </Text>
+                <Text
+                  style={styles.deleteItem}
+                  onPress={this.removeListItem.bind(this, l)}
+                >
+                  Remove
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+        <TouchableHighlight
+          underlayColor="transparent"
+          onPress={
+            this.state.text === ""
+              ? this.toggleInput.bind(this)
+              : this.addListItem.bind(this, this.state.text)
+          }
+          style={styles.button}
+        >
+          <Text style={styles.buttonText}>
+            {this.state.text === "" && "+ New List"}
+            {this.state.text !== "" && "+ Add New List Item"}
+          </Text>
+        </TouchableHighlight>
+        {showInput && (
+          <TextInput
+            style={styles.input}
+            onChangeText={text => this.updateText(text)}
+          />
+        )}
       </View>
     );
   }
 }
 
+const NoList = () => (
+  <View style={styles.noList}>
+    <Text style={styles.noListText}>No List, Add List To Get Started</Text>
+  </View>
+);
+
 const styles = StyleSheet.create({
-  container: {
+  itemContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#ededed",
+    flexDirection: "row"
+  },
+  item: {
+    color: "#156e9a",
+    fontSize: 18,
+    flex: 3,
+    padding: 20
+  },
+  deleteItem: {
     flex: 1,
+    padding: 20,
+    color: "#a3a3a3",
+    fontWeight: "bold",
+    marginTop: 3
+  },
+  button: {
+    height: 70,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5FCFF"
+    borderTopWidth: 1,
+    borderTopColor: "#156e9a"
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: "center",
-    margin: 10
+  buttonText: {
+    color: "#156e9a",
+    fontWeight: "bold"
   },
-  instructions: {
-    textAlign: "center",
-    color: "#333333",
-    marginBottom: 5
+  heading: {
+    height: 80,
+    justifyContent: "center",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#156e9a"
+  },
+  headingText: {
+    color: "#156e9a",
+    fontWeight: "bold"
+  },
+  input: {
+    height: 70,
+    backgroundColor: "#f2f2f2",
+    padding: 20,
+    color: "#156e9a"
+  },
+  noList: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  noListText: {
+    fontSize: 22,
+    color: "#156e9a"
   }
 });
