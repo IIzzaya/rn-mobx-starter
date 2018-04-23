@@ -1,2 +1,2 @@
 # rn-mobx-starter
-A react native project engined by mobx
+A simplest react native project engined by mobx
